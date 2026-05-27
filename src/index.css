@@ -57,6 +57,9 @@
     color-scheme: light;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Always reserve the scrollbar's space so the layout doesn't jump sideways
+       when expanding a panel (or opening the lightbox) makes one appear. */
+    scrollbar-gutter: stable;
   }
   body {
     margin: 0;
@@ -138,6 +141,13 @@
     min-height: 0;
     overflow: hidden;
   }
+
+  /* Dimming + blurred backdrop for the QR lightbox. */
+  .lightbox {
+    background: color-mix(in srgb, var(--color-ink) 58%, transparent);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+  }
 }
 
 /* Staggered entrance */
@@ -192,6 +202,25 @@
     transform: translateY(-2px);
   }
 }
+/* The lightbox backdrop fades in; its content pops up from slightly small. */
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 
 @media (prefers-reduced-motion: no-preference) {
   /* `backwards` (not `forwards`) so the element reverts to transform:none
@@ -213,6 +242,12 @@
   .steam {
     transform-box: fill-box;
     animation: steam 2.6s ease-in-out infinite;
+  }
+  .lightbox {
+    animation: fade 0.2s ease-out backwards;
+  }
+  .lightbox-pop {
+    animation: pop 0.3s cubic-bezier(0.22, 1, 0.36, 1) backwards;
   }
   /* The cover only exists while the wipe runs (these rules live inside the
      reduced-motion guard), so under reduced motion the glyph just shows

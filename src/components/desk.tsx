@@ -1,4 +1,11 @@
-import { useState, type CSSProperties } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
+import { createPortal } from "react-dom";
 
 /* Replays an entrance animation (by remounting via a bumped key) on hover —
    but only on devices with a true pointer. Touchscreens synthesize a
@@ -224,5 +231,78 @@ export function SectionLabel({ children }: { children: string }) {
         {children}
       </span>
     </div>
+  );
+}
+
+/* A light dimming-overlay that pops `children` into the centre of the screen
+   and closes on Esc, a backdrop click, or the × button. Rendered through a
+   portal to <body> so transformed / overflow-hidden ancestors (the tilted cards
+   and the collapsible support panel) can neither clip nor skew it. While open it
+   locks body scroll and parks focus on the close button for keyboard users. */
+export function Lightbox({
+  open,
+  onClose,
+  label,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  label: string;
+  children: ReactNode;
+}) {
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    closeRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  return createPortal(
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={label}
+      onClick={onClose}
+      className="lightbox fixed inset-0 z-[200] flex items-center justify-center p-6"
+    >
+      <button
+        ref={closeRef}
+        type="button"
+        onClick={onClose}
+        aria-label="Close"
+        className="absolute right-4 top-4 flex size-9 items-center justify-center rounded-full text-paper/80 transition-colors duration-200 hover:bg-paper/10 hover:text-paper"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          className="size-5 overflow-visible"
+        >
+          <path
+            d="M6,6 L18,18 M18,6 L6,18"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+        </svg>
+      </button>
+      {/* Stop clicks on the content from bubbling to the backdrop's onClose. */}
+      <div onClick={(e) => e.stopPropagation()} className="lightbox-pop">
+        {children}
+      </div>
+    </div>,
+    document.body,
   );
 }

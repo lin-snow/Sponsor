@@ -2,6 +2,7 @@ import { useState, type CSSProperties } from "react";
 import {
   DashedFrame,
   HandUnderline,
+  Lightbox,
   LinkDoodle,
   Monogram,
   Pushpin,
@@ -10,9 +11,26 @@ import {
 import { Avatar } from "./Avatar";
 import { afdian, sponsors, TIERS, type Sponsor } from "./sponsors";
 
-// At most this many stamps show on the wall (newest first); the rest collapse
-// into a quiet "+N more" line so the wall stays bounded and pretty.
-const WALL_LIMIT = 12;
+// The wall shows up to this many stamps at once (newest first); beyond it, a
+// "show more" button reveals the rest rather than letting the wall run forever.
+const WALL_CAP = 99;
+
+// prettier-ignore
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/* "2025-11-20" → "Nov 2025". Leaves anything unparseable untouched. */
+function formatDate(iso?: string) {
+  if (!iso) return "";
+  const [year, month] = iso.split("-");
+  const name = MONTHS[Number(month) - 1];
+  return name ? `${name} ${year}` : iso;
+}
+
+/* A tidy label for an outbound link: the bare host + path, no scheme or
+   trailing slash (e.g. "github.com/sseaan"). */
+function linkLabel(url: string) {
+  return url.replace(/^https?:\/\//, "").replace(/\/$/, "");
+}
 
 // Warm stamp tints cycled across the wall for postage-stamp variety.
 const STAMP_BG = [
@@ -42,49 +60,117 @@ function TierBadge({ tier }: { tier: NonNullable<Sponsor["tier"]> }) {
 }
 
 /* One sponsor as a tilted postage stamp — a perforated, colour-tinted frame
-   around the avatar — that lifts and straightens on hover. Wrapped in a link
-   when the sponsor gave one. */
-function StampCard({ s, i }: { s: Sponsor; i: number }) {
-  const body = (
-    <span className="flex flex-col items-center gap-1.5">
-      <span
-        className={`${TILTS[i % TILTS.length]} block transition-transform duration-200 group-hover/card:-translate-y-1 group-hover/card:rotate-0`}
+   around the avatar — that lifts and straightens on hover. Clicking it opens the
+   detail lightbox. */
+function StampCard({
+  s,
+  i,
+  onOpen,
+}: {
+  s: Sponsor;
+  i: number;
+  onOpen: (s: Sponsor) => void;
+}) {
+  return (
+    <li className="group/card">
+      <button
+        type="button"
+        onClick={() => onOpen(s)}
+        aria-label={`View ${s.name}`}
+        className="block cursor-pointer"
       >
-        <span className="postage-wrap">
+        <span className="flex flex-col items-center gap-1.5">
           <span
-            className="postage block p-[6px]"
-            style={
-              { "--postage-bg": STAMP_BG[i % STAMP_BG.length] } as CSSProperties
-            }
+            className={`${TILTS[i % TILTS.length]} block transition-transform duration-200 group-hover/card:-translate-y-1 group-hover/card:rotate-0`}
           >
-            <span className="block size-16 overflow-hidden">
-              <Avatar seed={s.seed ?? s.name} />
+            <span className="postage-wrap">
+              <span
+                className="postage block p-[6px]"
+                style={
+                  {
+                    "--postage-bg": STAMP_BG[i % STAMP_BG.length],
+                  } as CSSProperties
+                }
+              >
+                <span className="block size-16 overflow-hidden">
+                  <Avatar seed={s.seed ?? s.name} />
+                </span>
+              </span>
             </span>
+          </span>
+          <span className="max-w-[5.5rem] truncate font-mono text-[0.7rem] font-medium leading-tight text-ink">
+            {s.name}
+          </span>
+          {s.tier && <TierBadge tier={s.tier} />}
+        </span>
+      </button>
+    </li>
+  );
+}
+
+/* The enlarged sponsor card shown inside the lightbox: a big postage stamp with
+   the avatar, then the name (+ tier), their handwritten message, the date, and
+   an outbound link if they left one. */
+function SponsorDetail({ s }: { s: Sponsor }) {
+  return (
+    <figure
+      className="relative flex w-[min(86vw,20rem)] flex-col items-center gap-3 bg-paper px-7 py-8 text-center"
+      style={{
+        borderRadius: "8px 5px 7px 6px / 5px 8px 6px 7px",
+        boxShadow:
+          "0 2px 6px rgba(0,0,0,0.14), 0 26px 56px -24px rgba(0,0,0,0.6)",
+      }}
+    >
+      <Pushpin />
+      <span className="postage-wrap -rotate-2">
+        <span
+          className="postage block p-[7px]"
+          style={
+            {
+              "--postage-bg":
+                "color-mix(in srgb, var(--color-sticky) 40%, var(--color-paper))",
+            } as CSSProperties
+          }
+        >
+          <span className="block size-24 overflow-hidden">
+            <Avatar seed={s.seed ?? s.name} />
           </span>
         </span>
       </span>
-      <span className="max-w-[5.5rem] truncate font-mono text-[0.7rem] font-medium leading-tight text-ink">
-        {s.name}
-      </span>
-      {s.tier && <TierBadge tier={s.tier} />}
-    </span>
-  );
 
-  return (
-    <li className="group/card">
-      {s.link ? (
-        <a
-          href={s.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block"
-        >
-          {body}
-        </a>
-      ) : (
-        body
-      )}
-    </li>
+      <figcaption className="flex flex-col items-center gap-2.5">
+        <span className="flex flex-wrap items-center justify-center gap-2">
+          <span className="font-mono text-[0.95rem] font-medium text-ink">
+            {s.name}
+          </span>
+          {s.tier && <TierBadge tier={s.tier} />}
+        </span>
+
+        {s.message && (
+          <p className="font-hand text-[1.3rem] leading-snug text-soft">
+            “{s.message}”
+          </p>
+        )}
+
+        {s.date && (
+          <span className="font-mono text-[0.68rem] tabular-nums text-muted">
+            {formatDate(s.date)}
+          </span>
+        )}
+
+        {s.link && (
+          <a
+            href={s.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group/link relative mt-1 inline-flex items-center font-mono text-[0.74rem] text-soft underline decoration-transparent underline-offset-4 transition-colors duration-200 hover:text-ink hover:decoration-current"
+          >
+            {linkLabel(s.link)}
+            <LinkDoodle />
+          </a>
+        )}
+      </figcaption>
+    </figure>
   );
 }
 
@@ -135,8 +221,9 @@ function CoffeeCup() {
    on click, rather than parking a QR code on the page by default. */
 function SupportCoffee() {
   const [open, setOpen] = useState(false);
+  const [zoom, setZoom] = useState(false);
   return (
-    <section className="rise mt-12" style={{ animationDelay: "300ms" }}>
+    <section className="rise mt-10" style={{ animationDelay: "200ms" }}>
       <div className="flex flex-col items-center">
         <button
           type="button"
@@ -157,7 +244,10 @@ function SupportCoffee() {
           className={`fold w-full ${open ? "open" : ""}`}
           inert={!open}
         >
-          <div>
+          {/* px/pb padding gives the cards' shadows + pushpin room to render
+              before the .fold wrapper's overflow:hidden (needed for the
+              collapse animation) would clip them. */}
+          <div className="px-3 pb-6">
             <div className="mx-auto mt-6 grid max-w-[26rem] grid-cols-1 gap-5 sm:grid-cols-2">
               <a
                 href={afdian}
@@ -176,28 +266,60 @@ function SupportCoffee() {
               <div
                 className="relative rotate-[0.8deg] bg-paper px-4 py-5 text-center"
                 style={{
-                  borderRadius: "9px 12px 8px 11px / 12px 9px 11px 8px",
+                  borderRadius: "6px 4px 6px 5px / 4px 6px 5px 6px",
                   border: "1px solid var(--color-hair)",
                   boxShadow:
-                    "0 1px 1px rgba(0,0,0,0.04), 0 6px 14px -8px rgba(38,34,28,0.35)",
+                    "0 1px 1px rgba(38,34,28,0.05), 0 3px 7px -5px rgba(38,34,28,0.28)",
                 }}
               >
                 <Pushpin />
-                <img
-                  src="/wechatpay.jpeg"
-                  alt="WeChat tip QR code"
-                  width={120}
-                  height={120}
-                  className="mx-auto size-[120px] object-contain"
-                />
+                <button
+                  type="button"
+                  onClick={() => setZoom(true)}
+                  aria-label="Enlarge WeChat tip QR code"
+                  className="group/qr mx-auto block cursor-zoom-in"
+                >
+                  <img
+                    src="/wechatpay.jpeg"
+                    alt="WeChat tip QR code"
+                    width={120}
+                    height={120}
+                    className="mx-auto size-[120px] object-contain transition-transform duration-200 group-hover/qr:scale-[1.04]"
+                  />
+                </button>
                 <span className="mt-2 block font-mono text-[0.72rem] text-muted">
-                  WeChat
+                  WeChat — tap to enlarge
                 </span>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <Lightbox
+        open={zoom}
+        onClose={() => setZoom(false)}
+        label="WeChat tip QR code"
+      >
+        <figure
+          className="relative -rotate-1 bg-paper p-4"
+          style={{
+            borderRadius: "13px 9px 12px 8px / 9px 13px 8px 12px",
+            boxShadow:
+              "0 2px 6px rgba(0,0,0,0.18), 0 30px 60px -24px rgba(0,0,0,0.7)",
+          }}
+        >
+          <Pushpin />
+          <img
+            src="/wechatpay.jpeg"
+            alt="WeChat tip QR code"
+            className="block size-[min(76vw,22rem)] object-contain"
+          />
+          <figcaption className="mt-3 text-center font-mono text-[0.74rem] text-muted">
+            WeChat
+          </figcaption>
+        </figure>
+      </Lightbox>
     </section>
   );
 }
@@ -206,11 +328,13 @@ function SupportCoffee() {
    collapsible "buy me a coffee" CTA. Same paper shell and desk primitives as
    the home page, so it reads as part of the same hand. */
 export function Sponsor() {
+  const [showAll, setShowAll] = useState(false);
+  const [selected, setSelected] = useState<Sponsor | null>(null);
   const sorted = [...sponsors].sort((a, b) =>
     (b.date ?? "").localeCompare(a.date ?? ""),
   );
-  const shown = sorted.slice(0, WALL_LIMIT);
-  const extra = sorted.length - shown.length;
+  const visible = showAll ? sorted : sorted.slice(0, WALL_CAP);
+  const hidden = sorted.length - visible.length;
 
   return (
     <div className="min-h-svh">
@@ -248,22 +372,40 @@ export function Sponsor() {
           </p>
         </div>
 
-        <section className="rise mt-9" style={{ animationDelay: "200ms" }}>
-          <SectionLabel>the wall</SectionLabel>
+        <SupportCoffee />
+
+        <section className="rise mt-12" style={{ animationDelay: "300ms" }}>
+          <SectionLabel>wall of thanks</SectionLabel>
           <ul className="flex flex-wrap justify-center gap-x-6 gap-y-7">
-            {shown.map((s, i) => (
-              <StampCard key={s.name} s={s} i={i} />
+            {visible.map((s, i) => (
+              <StampCard key={s.name} s={s} i={i} onOpen={setSelected} />
             ))}
           </ul>
-          {extra > 0 && (
-            <p className="mt-7 text-center font-hand text-[1.05rem] text-soft">
-              + {extra} more — thank you all ♥
-            </p>
+          {hidden > 0 && (
+            <div className="mt-8 flex justify-center">
+              <button
+                type="button"
+                onClick={() => setShowAll(true)}
+                className="note relative inline-flex -rotate-[0.4deg] cursor-pointer items-center gap-2 px-5 py-2.5 font-mono text-[0.76rem] font-medium transition-transform duration-200 hover:-translate-y-0.5 hover:rotate-0"
+                style={{
+                  borderRadius: "11px 8px 12px 9px / 8px 12px 9px 11px",
+                }}
+              >
+                <DashedFrame />
+                show {hidden} more
+              </button>
+            </div>
           )}
         </section>
-
-        <SupportCoffee />
       </main>
+
+      <Lightbox
+        open={!!selected}
+        onClose={() => setSelected(null)}
+        label={selected ? `${selected.name} — sponsor` : ""}
+      >
+        {selected && <SponsorDetail s={selected} />}
+      </Lightbox>
     </div>
   );
 }

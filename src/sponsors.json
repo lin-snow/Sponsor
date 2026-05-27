@@ -2,20 +2,82 @@
   "afdian": "https://afdian.com/a/l1nsn0w",
   "sponsors": [
     {
-      "name": "Example",
-      "tier": "rocket",
-      "link": "https://github.com/lin-snow",
-      "message": "thanks for the OSS!",
-      "date": "2026.05"
+      "name": "Jinvic",
+      "link": "https://github.com/Jinvic",
+      "date": "2026-05-27"
     },
     {
-      "name": "Alice",
-      "tier": "meal",
-      "message": "love Ech0",
-      "date": "2026.04"
+      "name": "star-uu",
+      "link": "https://github.com/star-uu",
+      "date": "2026-05-01"
     },
-    { "name": "Bob", "tier": "coffee", "date": "2026.03" },
-    { "name": "Carol", "tier": "coffee", "date": "2026.02" },
-    { "name": "Dave", "tier": "meal", "date": "2026.01" }
+    {
+      "name": "lmscn",
+      "message": "Support from www.lmscn.com, really like this project, hope it keeps getting better.",
+      "date": "2026-04-01"
+    },
+    {
+      "name": "ABloom",
+      "message": "㊗️ Mumuxue achieves fitness success",
+      "date": "2026-03-16"
+    },
+    {
+      "name": "Anonymous User",
+      "date": "2026-01-23"
+    },
+    {
+      "name": "鸿运当头",
+      "message": "Thank you for creating Ech0",
+      "date": "2026-01-06"
+    },
+    {
+      "name": "he9ab2l",
+      "link": "https://github.com/he9ab2l",
+      "date": "2025-12-23"
+    },
+    {
+      "name": "ljxme",
+      "link": "https://github.com/ljxme",
+      "message": "Doing my humble part 😋",
+      "date": "2025-11-30"
+    },
+    {
+      "name": "王贼臣",
+      "message": "Thanks www.cardopt.cn",
+      "date": "2025-11-20"
+    },
+    {
+      "name": "Rvn0xsy",
+      "link": "https://github.com/Rvn0xsy",
+      "message": "Great project, I will keep following!",
+      "date": "2025-11-12"
+    },
+    {
+      "name": "hoochanlon",
+      "link": "https://github.com/hoochanlon",
+      "date": "2025-10-28"
+    },
+    {
+      "name": "continue33",
+      "link": "https://github.com/continue33",
+      "message": "Thanks for fixing R2",
+      "date": "2025-10-23"
+    },
+    {
+      "name": "QYG2297248353",
+      "link": "https://github.com/QYG2297248353",
+      "date": "2025-10-10"
+    },
+    {
+      "name": "sseaan",
+      "link": "https://github.com/sseaan",
+      "message": "Ech0 is a great thing 🥳",
+      "date": "2025-07-27"
+    },
+    {
+      "name": "Anonymous Friend",
+      "message": "Buy yourself a sweet drink",
+      "date": "2025-05-19"
+    }
   ]
 }

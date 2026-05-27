@@ -1,0 +1,52 @@
+name: 💌 Add a sponsor
+description: Get your name onto the sponsor wall at sponsor.sn0w.fyi
+title: "[sponsor] "
+# Deliberately no `labels:` here — the workflow triggers on the `sponsor`
+# label, which L1nSn0w applies by hand after reviewing the issue.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thanks so much for the support! 🙏
+
+        Fill in the short form below and I'll review it. Once approved, your
+        name goes up automatically ✨
+
+        💡 No need to add a date or any technical details — just the fields here.
+  - type: input
+    id: name
+    attributes:
+      label: 🏷️ Name
+      description: How you'd like to appear on the wall.
+      placeholder: e.g. Jinvic, or "Anonymous Friend"
+    validations:
+      required: true
+  - type: input
+    id: link
+    attributes:
+      label: 🔗 Link (optional)
+      description: A GitHub profile or homepage. Must start with https://
+      placeholder: https://github.com/your-handle
+    validations:
+      required: false
+  - type: textarea
+    id: message
+    attributes:
+      label: 💬 Message (optional)
+      description: A short one-line note. Plain text only.
+      placeholder: Great project, keep it up!
+    validations:
+      required: false
+  - type: dropdown
+    id: tier
+    attributes:
+      label: 🎟️ Tier (optional)
+      description: Purely a little label — the wall shows no amounts.
+      options:
+        - (none)
+        - ☕ coffee
+        - 🍜 meal
+        - 🚀 rocket
+      default: 0
+    validations:
+      required: false
