@@ -1,0 +1,12 @@
+{
+  // Sponsor hub at sponsor.sn0w.fyi — a Workers Static Assets project serving
+  // the dist/ build. Deployed from GitHub Actions (.github/workflows/deploy.yml).
+  // `custom_domain: true` provisions the hostname + DNS in the sn0w.fyi zone
+  // automatically on first deploy (the zone is already in this account).
+  "name": "sn0w-sponsor",
+  "compatibility_date": "2026-05-27",
+  "assets": {
+    "directory": "./dist",
+  },
+  "routes": [{ "pattern": "sponsor.sn0w.fyi", "custom_domain": true }],
+}

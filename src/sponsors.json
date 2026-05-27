@@ -1,0 +1,21 @@
+{
+  "afdian": "https://afdian.com/a/l1nsn0w",
+  "sponsors": [
+    {
+      "name": "Example",
+      "tier": "rocket",
+      "link": "https://github.com/lin-snow",
+      "message": "thanks for the OSS!",
+      "date": "2026.05"
+    },
+    {
+      "name": "Alice",
+      "tier": "meal",
+      "message": "love Ech0",
+      "date": "2026.04"
+    },
+    { "name": "Bob", "tier": "coffee", "date": "2026.03" },
+    { "name": "Carol", "tier": "coffee", "date": "2026.02" },
+    { "name": "Dave", "tier": "meal", "date": "2026.01" }
+  ]
+}

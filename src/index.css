@@ -1,0 +1,258 @@
+@import "tailwindcss";
+
+/* Fonts — each has one job:
+   sans   = body            (Hanken Grotesk)
+   mono   = labels/stickies  (IBM Plex Mono)
+   hand   = marker scribbles (Caveat)
+   script = corner monogram  (Pinyon Script) */
+@import "@fontsource-variable/hanken-grotesk";
+/* Mono only renders Latin labels at 400 (default) and 500 (font-medium); the
+   600 weight and non-Latin subsets the full imports pull in are never used. */
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/latin-500.css";
+@import "@fontsource-variable/caveat";
+
+/* Pinyon Script is purely decorative — only the single uppercase monogram
+   letter ever renders. We self-host an A–Z subset (~12 kB) instead of
+   @import-ing the whole face (~39 kB Latin woff2 + woff + extra subsets),
+   which also keeps those unused files out of the build. */
+@font-face {
+  font-family: "Pinyon Script";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./assets/fonts/pinyon-script-AZ-400.woff2") format("woff2");
+}
+
+@theme {
+  --font-sans: "Hanken Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-hand: "Caveat Variable", ui-sans-serif, cursive;
+  --font-script: "Pinyon Script", ui-serif, cursive;
+
+  /* Warm paper palette */
+  --color-paper: #f8f4ec;
+  --color-ink: #26221c;
+  --color-soft: #6f685c;
+  /* muted is the faintest text tier (section labels, plain dates); kept dark
+     enough to clear WCAG AA 4.5:1 on paper (4.81:1) while still reading as the
+     quietest layer. */
+  --color-muted: #736b5b;
+  --color-hair: #e7e0d2;
+
+  /* Accents for the desk annotations */
+  --color-sticky: #fbf1a4;
+  --color-sticky-ink: #6a6320;
+  --color-marker: #d75a48;
+  --color-marker-green: #4f9d69;
+  --color-marker-blue: #4f6fc0;
+  --color-note: #dde8fb;
+  --color-note-ink: #3a5ba0;
+  /* olive stamp ink, darkened to meet WCAG AA 4.5:1 on paper (4.59:1). */
+  --color-stamp: #7a6f3e;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    margin: 0;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+}
+
+@layer components {
+  /* Yellow sticky note */
+  .sticky-note {
+    background: var(--color-sticky);
+    color: var(--color-sticky-ink);
+    box-shadow:
+      0 1px 1px rgba(0, 0, 0, 0.04),
+      0 6px 14px -8px rgba(91, 80, 20, 0.45);
+  }
+
+  /* Blue marginalia note */
+  .note {
+    background: var(--color-note);
+    color: var(--color-note-ink);
+  }
+
+  /* Postage stamp. The perforated edge is punched with a four-edge radial-
+     gradient mask (transparent bites repeated along each side, plus a solid
+     interior). Because a mask clips a same-element drop-shadow, the shadow
+     lives on the `.postage-wrap` parent so it follows the perforated outline.
+     `--postage-bg` is set per stamp for the warm colour variety. */
+  .postage-wrap {
+    display: inline-block;
+    filter: drop-shadow(0 2px 2px rgba(38, 34, 28, 0.18));
+  }
+  .postage {
+    --r: 4px; /* perforation radius */
+    display: block;
+    background: var(--postage-bg, var(--color-paper));
+    -webkit-mask:
+      radial-gradient(circle var(--r) at left, #0000 98%, #000) repeat-y left /
+        calc(2 * var(--r)) calc(2 * var(--r)),
+      radial-gradient(circle var(--r) at right, #0000 98%, #000) repeat-y
+        right / calc(2 * var(--r)) calc(2 * var(--r)),
+      radial-gradient(circle var(--r) at top, #0000 98%, #000) repeat-x top /
+        calc(2 * var(--r)) calc(2 * var(--r)),
+      radial-gradient(circle var(--r) at bottom, #0000 98%, #000) repeat-x
+        bottom / calc(2 * var(--r)) calc(2 * var(--r)),
+      linear-gradient(#000 0 0) no-repeat center / calc(100% - 2 * var(--r))
+        calc(100% - 2 * var(--r));
+    mask:
+      radial-gradient(circle var(--r) at left, #0000 98%, #000) repeat-y left /
+        calc(2 * var(--r)) calc(2 * var(--r)),
+      radial-gradient(circle var(--r) at right, #0000 98%, #000) repeat-y
+        right / calc(2 * var(--r)) calc(2 * var(--r)),
+      radial-gradient(circle var(--r) at top, #0000 98%, #000) repeat-x top /
+        calc(2 * var(--r)) calc(2 * var(--r)),
+      radial-gradient(circle var(--r) at bottom, #0000 98%, #000) repeat-x
+        bottom / calc(2 * var(--r)) calc(2 * var(--r)),
+      linear-gradient(#000 0 0) no-repeat center / calc(100% - 2 * var(--r))
+        calc(100% - 2 * var(--r));
+  }
+
+  /* Unfolding support panel. The 0fr→1fr grid-rows trick animates to the
+     content's natural height; the inner wrapper clips it while collapsed. The
+     toggle works without motion — only the easing is gated below. */
+  .fold {
+    display: grid;
+    grid-template-rows: 0fr;
+  }
+  .fold.open {
+    grid-template-rows: 1fr;
+  }
+  .fold > * {
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+/* Staggered entrance */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* Marker circle draws itself in */
+@keyframes scribble {
+  from {
+    stroke-dashoffset: 320;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+/* Dash pattern is always present so the re-trace has something to draw; with
+   the default 0 offset the line just reads as fully inked when not animating. */
+.retrace {
+  stroke-dasharray: 320;
+}
+
+/* Ink wipe for the corner monogram — a paper-coloured cover slides off to the
+   right (via transform: scaleX) to reveal the cursive letter left-to-right.
+   We animate the *cover's* transform rather than the glyph's clip-path so the
+   wipe stays on the compositor; the ornate Pinyon Script glyph is rasterised
+   once instead of being repainted every frame (which dropped frames on load). */
+@keyframes inkwipe {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/* Steam drifting up from the buy-me-a-coffee cup. */
+@keyframes steam {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: translateY(1.5px);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* `backwards` (not `forwards`) so the element reverts to transform:none
+     once the entrance finishes — a lingering translateY(0) would create a
+     stacking context per section. The from-keyframe still hides it before it
+     animates in. */
+  .rise {
+    animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+  .scribble {
+    stroke-dasharray: 320;
+    animation: scribble 0.9s 0.6s ease-out forwards;
+  }
+  /* Re-inks the underline quickly on hover (remounted via React key). */
+  .retrace {
+    animation: scribble 0.5s ease-out;
+  }
+  /* Each steam wisp floats on its own offset (set inline per path). */
+  .steam {
+    transform-box: fill-box;
+    animation: steam 2.6s ease-in-out infinite;
+  }
+  /* The cover only exists while the wipe runs (these rules live inside the
+     reduced-motion guard), so under reduced motion the glyph just shows
+     statically with nothing painted over it. */
+  .inkwrite,
+  .inkwrite-re {
+    position: relative;
+  }
+  .inkwrite::after,
+  .inkwrite-re::after {
+    content: "";
+    position: absolute;
+    inset: -8% -14%; /* overshoot the box so cursive flourishes aren't clipped */
+    background: var(--color-paper);
+    transform-origin: right center;
+    will-change: transform;
+  }
+  /* Monogram writes itself in on entrance ('both': cover holds during the
+     delay, then stays off once revealed)… */
+  .inkwrite::after {
+    animation: inkwipe 0.9s 0.5s ease-out both;
+  }
+  /* …and re-inks (faster, no delay) when hovered — remounted via React key. */
+  .inkwrite-re::after {
+    animation: inkwipe 0.7s ease-out both;
+  }
+  /* Ease the support panel open, and let its contents fade/settle in rather
+     than appearing fully drawn the instant it's toggled. */
+  .fold {
+    transition: grid-template-rows 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .fold > * {
+    opacity: 0;
+    transform: translateY(-4px);
+    transition:
+      opacity 0.25s ease,
+      transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .fold.open > * {
+    opacity: 1;
+    transform: none;
+  }
+}
