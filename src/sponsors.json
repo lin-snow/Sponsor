@@ -2,6 +2,11 @@
   "afdian": "https://afdian.com/a/l1nsn0w",
   "sponsors": [
     {
+      "name": "LIUBIN",
+      "tier": "meal",
+      "date": "2026-05-31"
+    },
+    {
       "name": "Jinvic",
       "link": "https://github.com/Jinvic",
       "date": "2026-05-27"
