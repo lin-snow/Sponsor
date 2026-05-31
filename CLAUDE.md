@@ -80,6 +80,14 @@ When adding sponsors, edit `src/sponsors.json`. Reach for `src/components/` (and
 ## Deployment
 
 Deployed to Cloudflare Workers Static Assets as the `sn0w-sponsor` Worker at
-`sponsor.sn0w.fyi`. `wrangler.jsonc` serves `./dist`; the custom domain is
-provisioned in the `sn0w.fyi` zone. GitHub Actions (`.github/workflows/deploy.yml`)
-builds and deploys on push to `main`.
+`sponsor.sn0w.fyi`. `wrangler.jsonc` serves `./dist`. GitHub Actions
+(`.github/workflows/deploy.yml`) builds and deploys on push to `main`.
+
+The custom domain (`sponsor.sn0w.fyi`) is **not** managed by `wrangler.jsonc` —
+it is provisioned once by hand in the Cloudflare dashboard (Workers & Pages →
+`sn0w-sponsor` → Settings → Domains & Routes → Add → Custom Domain). This keeps
+the CI deploy token scoped to **Workers Scripts: Edit** only; it never needs
+Workers Routes / DNS permissions on the `sn0w.fyi` zone. (Putting a
+`custom_domain` route back in `wrangler.jsonc` makes wrangler call the zone's
+`/workers/routes` endpoint on every deploy, which fails with API error 10000
+unless the token is also scoped to that zone.)

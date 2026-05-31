@@ -1,12 +1,14 @@
 {
   // Sponsor hub at sponsor.sn0w.fyi — a Workers Static Assets project serving
   // the dist/ build. Deployed from GitHub Actions (.github/workflows/deploy.yml).
-  // `custom_domain: true` provisions the hostname + DNS in the sn0w.fyi zone
-  // automatically on first deploy (the zone is already in this account).
+  //
+  // The custom domain (sponsor.sn0w.fyi) is provisioned ONCE by hand in the
+  // Cloudflare dashboard (Workers & Pages → sn0w-sponsor → Domains & Routes),
+  // not from CI. That keeps the deploy token scoped to Workers Scripts only —
+  // it never needs Workers Routes / DNS permissions on the sn0w.fyi zone.
   "name": "sn0w-sponsor",
   "compatibility_date": "2026-05-27",
   "assets": {
     "directory": "./dist",
   },
-  "routes": [{ "pattern": "sponsor.sn0w.fyi", "custom_domain": true }],
 }
