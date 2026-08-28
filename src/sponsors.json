@@ -2,6 +2,11 @@
   "afdian": "https://afdian.com/a/l1nsn0w",
   "sponsors": [
     {
+      "name": "Anonymous Friend",
+      "tier": "rocket",
+      "date": "2026-08-28"
+    },
+    {
       "name": "Savely",
       "tier": "meal",
       "message": "Спасибо за твой вклад.",
